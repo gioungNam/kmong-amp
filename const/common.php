@@ -13,3 +13,17 @@ const MYSQL_USER = "root";
 const MYSQL_PASSWORD = "";
 
 const MYSQL_DATABASE = "project";
+
+
+class BoardConst {
+
+    public static function getBoardType() {
+        return array(
+            'notice',
+            'free',
+            'img',
+            'inquiry',
+            'search'
+        );
+    }
+}

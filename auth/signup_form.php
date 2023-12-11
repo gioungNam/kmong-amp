@@ -3,6 +3,7 @@
 ?>
 
 
+<?php if (empty($_SESSION['user_id'])) : ?>
 <script src="signup.js"></script>
 
 <div class="container d-flex justify-content-center align-items-center">
@@ -52,6 +53,12 @@
         </div>
     </div>
 </div>
+
+<?php else : ?>
+    <div class="row justify-content-center">
+        <label class="form-label">이미 로그인 상태입니다.</label>
+    </div>
+<?php endif; ?>
 
 </body>
 </html>

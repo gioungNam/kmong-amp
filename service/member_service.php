@@ -135,4 +135,38 @@ require_once "../model/member_model.php";
                 );
             }
         }
+
+
+        /**
+         * 로그인
+         */
+        public function login($sUserId, $sPassword) {
+            $aResult = array(
+                'result' => false,
+                'msg' => ''
+            );
+    
+            // 입력값이 빈 값인지 확인
+            if (empty($sUserId) || empty($sPassword)) {
+                $aResult['msg'] = '아이디 또는 비밀번호를 입력하세요.';
+                return $aResult;
+            }
+    
+            // 사용자 정보 가져오기
+            $aMemberInfo = $this->oMemberModel->selectMemberByMemberId($sUserId);
+    
+            // 사용자 정보가 없거나 비밀번호가 일치하지 않으면 로그인 실패
+            if (empty($aMemberInfo) || $aMemberInfo['password'] !== $sPassword) {
+                $aResult['msg'] = '아이디 또는 비밀번호가 올바르지 않습니다.';
+                return $aResult;
+            }
+    
+            // 로그인 성공 시 사용자 정보 반환
+            return array(
+                'result' => true,
+                'user_id' => $aMemberInfo['user_id'],
+                'nickname' => $aMemberInfo['nickname'],
+                'profile_path' => $aMemberInfo['profile_path']
+            );
+        }
     }

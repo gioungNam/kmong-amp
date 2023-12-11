@@ -55,7 +55,9 @@ class MemberModel {
 
             // insert 성공시
             if ($this->oDataBase->query($sQuery) === true) {
-                session_start();
+                if (session_status() === PHP_SESSION_NONE) {   
+                    session_start();
+                 }
                 
                 // 세션 정보에 저장
                 $_SESSION["user_id"] = $aInsert['user_id'];
