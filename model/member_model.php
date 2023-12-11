@@ -50,8 +50,8 @@ class MemberModel {
             'result' => true
         );
 
-        $sQuery= "INSERT INTO member (user_id, password, member_grade, nickname, level, profile_path) 
-            VALUES ('".$aInsert['user_id']."', '".$aInsert['password']."', '".$aInsert['member_grade']."', '".$aInsert['nickname']."', '".$aInsert['level']."', '".$aInsert['profile_path']."')";
+        $sQuery= "INSERT INTO member (user_id, password, member_grade, nickname, level, profile_path, game_nickname) 
+            VALUES ('".$aInsert['user_id']."', '".$aInsert['password']."', '".$aInsert['member_grade']."', '".$aInsert['nickname']."', '".$aInsert['level']."', '".$aInsert['profile_path']."', '".$aInsert['character_name']."')";
 
             // insert 성공시
             if ($this->oDataBase->query($sQuery) === true) {

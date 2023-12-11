@@ -58,7 +58,7 @@ class BoardModel {
 
 
         // 쿼리 작성
-        $sQuery = "SELECT * FROM board WHERE board_type = '$sType' ORDER BY created_at DESC";
+        $sQuery = "SELECT * FROM board WHERE board_type = '$sType' ORDER BY id DESC";
 
         // 쿼리 실행
         $oResult = $this->oDataBase->query($sQuery);

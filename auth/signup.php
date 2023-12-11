@@ -17,15 +17,22 @@
 
     // 데이터 존재시
     if (empty($aCheckResult['data']) === false) {
-        // 파일 업로드 처리
-        $aUploadResult = $oMemberService->uploadProfilePicture($_FILES['profile_picture']);
 
-        if ($aUploadResult['result'] === false) {
-            echo json_encode($aUploadResult);
-            return;
+        // profile_picture가 있을 경우에만
+        if (empty($_FILES['profile_picture']['name']) === false) {
+            
+            // 파일 업로드 처리
+            $aUploadResult = $oMemberService->uploadProfilePicture($_FILES['profile_picture']);
+
+            if ($aUploadResult['result'] === false) {
+                echo json_encode($aUploadResult);
+                return;
+            }
         }
+
         // 프로필 사진 data 변수에 추가
-        $aCheckResult['data']['profile_path'] = $aUploadResult['path'];
+        $aCheckResult['data']['profile_path'] = isset($aUploadResult['path']) ? $aUploadResult['path'] : '';
+    
         // 회원가입
         $aJoinResult = $oMemberService->signUp($aCheckResult['data']);
 

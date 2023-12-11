@@ -107,6 +107,13 @@ require_once "../model/member_model.php";
          * 프로필 사진 업로드
          */
         public function uploadProfilePicture($aProfilePicture) {
+
+            // 파일 없으면 그냥 리턴
+            if (is_array($aProfilePicture) === false || empty($aProfilePicture)) {
+                return;
+                    
+            }
+
             // 파일 업로드를 위한 설정 (예: 업로드 폴더 경로)
             $sUploadPath = "../uploads/";
 
@@ -118,7 +125,10 @@ require_once "../model/member_model.php";
 
             // 파일 업로드 시 에러 체크
             if ($aProfilePicture['error'] !== 0) {
-                return "파일 업로드 중 에러가 발생했습니다.";
+                return array(
+                    'result' => true,
+                    'msg'=>"파일 업로드 중 에러가 발생했습니다."
+                );
             }
 
             // 업로드된 파일을 지정한 경로로 이동
