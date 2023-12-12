@@ -48,7 +48,7 @@ $paginatedPosts = array_slice($posts, $start, $perPage);
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between mb-3">
-        <h2 class="mb-3">게시판 - <?php echo ucfirst($boardType); ?></h2>
+        <h2 class="mb-3"><?php echo BoardConst::convertTypeToName($boardType); ?></h2>
         <a href="board_form.php?type=<?php echo $boardType; ?>" class="btn btn-primary">글쓰기</a>
     </div>
 
@@ -59,8 +59,9 @@ $paginatedPosts = array_slice($posts, $start, $perPage);
                 <th>번호</th>
                 <th scope="col" style="width: 40%;">제목</th>
                 <th scope="col" style="width: 15%;">작성자</th>
-                <th scope="col" style="width: 10%;">추천수</th>
-                <th scope="col" style="width: 10%;">조회수</th>
+                <th scope="col">작성일</th>
+                <th scope="col">추천수</th>
+                <th scope="col">조회수</th>
             </tr>
         </thead>
         <tbody>
@@ -68,9 +69,10 @@ $paginatedPosts = array_slice($posts, $start, $perPage);
                 <tr>
                     <td><?php echo $post['id']; ?></td>
                     <td><a href="post.php?id=<?php echo $post['id']; ?>"><?php echo $post['title']; ?></a></td>
-                    <td><?php echo $post['user_id']; ?></td>
+                    <td><?php echo $post['nickname']; ?></td>
+                    <td><?php echo $post['created_at']; ?></td>
                     <td><?php echo $post['likes']; ?></td>
-                    <td><?php echo isset($post['view_count']) ? $post['view_count'] : 0; ?></td>
+                    <td><?php echo isset($post['views']) ? $post['views'] : 0; ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

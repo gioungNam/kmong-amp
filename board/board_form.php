@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once '../template/header.php';
+require_once '../const/common.php';
 
 // 상수로 정의된 게시판 타입 배열
 $validBoardTypes = [
@@ -25,7 +26,7 @@ if (empty($boardType)) {
 ?>
 
 <div class="container mt-4">
-    <h2 class="mb-3">글쓰기 - <?php echo ucfirst($boardType); ?></h2>
+    <h2 class="mb-3"><?php echo BoardConst::convertTypeToName($boardType); ?></h2>
 
     <form id="boardForm" action="board_write.php" method="post">
         <input type="hidden" name="boardType" value="<?php echo $boardType; ?>">

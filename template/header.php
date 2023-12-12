@@ -16,6 +16,9 @@
             integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
             crossorigin="anonymous"
         />
+        <!-- Bootstrap Icons CSS -->
+        <link href="
+            https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     </head>
     <body>

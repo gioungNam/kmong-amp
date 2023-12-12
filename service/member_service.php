@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_once "../model/member_model.php";
 
@@ -178,5 +181,37 @@ require_once "../model/member_model.php";
                 'nickname' => $aMemberInfo['nickname'],
                 'profile_path' => $aMemberInfo['profile_path']
             );
+        }
+
+
+        /**
+         * 게시글 좋아요 여부 체크
+         */
+        public function isLikedBoard($iBoardId) {
+            $bReturn = false;
+
+            // 필수 파라미터 체크
+            if (empty($_SESSION['user_id']) || empty($iBoardId)) {  
+                return $bReturn;
+            }
+
+
+            // 좋아요 체크
+            // 좋아요 기록 체크
+            $aMemberInfoRes = $this->oMemberModel->getMemberValueByIdAndType($_SESSION['user_id'], LIKES);
+
+            if ($aMemberInfoRes['result'] === true) {
+
+                if (empty($aMemberInfoRes['data']) === false) {
+                    $aInfo = $aMemberInfoRes['data'];
+
+                    if (in_array($iBoardId, $aInfo)) {
+                        $bReturn = true;
+                    }
+                }
+                
+            }
+
+            return $bReturn;
         }
     }

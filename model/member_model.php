@@ -73,6 +73,74 @@ class MemberModel {
             }
     }
 
+    /**
+     * member value 조회
+     */
+    public function getMemberValueByIdAndType ($sUserId, $sType) {
+
+        $aResult = array(
+            'result' => false,
+            'msg' => '',
+            'data' => array()
+        );
+    
+        // 게시글 조회 쿼리 (board와 member 테이블 조인)
+        $sQuery = "SELECT *  
+                   FROM member_value
+                   WHERE user_id = '$sUserId' and type = '$sType'";
+    
+        // 쿼리 실행
+        $oResult = $this->oDataBase->query($sQuery);
+    
+        // 결과값이 있는 경우
+        $aReturn = array();
+        if ($oResult && $oResult->num_rows > 0) {
+            // 순회해서 return 값 세팅
+            while($aRow = $oResult->fetch_assoc()) {
+                $aReturn[] = $aRow['value'];
+            }
+            $aResult['result'] = true;
+            $aResult['data'] = $aReturn;
+        } else {
+            $aResult['msg'] = "관련 정보가 없습니다.";
+        }
+    
+        return $aResult;
+
+    }
+
+
+    /**
+     * member_value 테이블에 insert
+     */
+    public function insertMemberValue($userId, $type, $value) {
+        $result = array(
+            'result' => false,
+            'msg' => ''
+        );
+
+        $query = "INSERT INTO member_value (user_id, type, value) VALUES (?, ?, ?)";
+        $stmt = $this->oDataBase->prepare($query);
+
+        if ($stmt === false) {
+            $result['msg'] = "쿼리 준비 중 오류가 발생했습니다.";
+            return $result;
+        }
+
+        $stmt->bind_param("sss", $userId, $type, $value);
+        $stmt->execute();
+
+        if ($stmt->error) {
+            $result['msg'] = "데이터 삽입 중 오류가 발생했습니다.";
+        } else {
+            $result['result'] = true;
+        }
+
+        $stmt->close();
+
+        return $result;
+    }
+
 
     public function __destruct() {
         // db연결 종료
