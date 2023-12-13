@@ -38,6 +38,7 @@ $perPage = 10; // 페이지당 표시할 게시물 수
 $oBoardService = new BoardService();
 $posts = $oBoardService->getBoardListByType($boardType);
 
+
 // 페이징을 위한 배열 슬라이싱
 $start = ($page - 1) * $perPage;
 $end = $start + $perPage;
@@ -57,38 +58,56 @@ $paginatedPosts = array_slice($posts, $start, $perPage);
     </div>
 
     <!-- 게시글 목록 표시 -->
-    <table class="table">
-        <thead>
-            <tr>
-                <th>번호</th>
-                <th scope="col" style="width: 40%;">제목</th>
-                <th scope="col" style="width: 15%;">작성자</th>
-                <th scope="col">작성일</th>
-                <?php if ($boardType === 'inquiry') : ?>
-                <th scope="col">문의상태</th>
-                <?php else : ?>
-                    <th scope="col">추천수</th>
-                <?php endif; ?>
-                <th scope="col">조회수</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($paginatedPosts as $idx => $post) : ?>
+    <?php if ($boardType === 'img') : ?>
+        <div class="row">
+        <?php foreach ($paginatedPosts as $idx => $post) : ?>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="<?php echo (isset($post['image_path'])) ? $post['image_path'] : ''; ?>" class="card-img-top" alt="게시글 이미지">
+                    <div class="card-body">
+                        <h5 class="card-title"><a href="post.php?id=<?php echo $post['id']; ?>&type=<?php echo $boardType; ?>"><?php echo $post['title']; ?></a></h5>
+                        <p class="card-text">작성자: <?php echo $post['nickname']; ?></p>
+                        <p class="card-text">추천수: <?php echo $post['likes']; ?></p>
+                        <p class="card-text">조회수: <?php echo isset($post['views']) ? $post['views'] : 0; ?></p>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+        </div>
+    <?php else : ?>
+        <table class="table">
+            <thead>
                 <tr>
-                    <td><?php echo $post['id']; ?></td>
-                    <td><a href="post.php?id=<?php echo $post['id']; ?>&type=<?php echo $boardType; ?>"><?php echo $post['title']; ?></a></td>
-                    <td><?php echo $post['nickname']; ?></td>
-                    <td><?php echo $post['created_at']; ?></td>
+                    <th>번호</th>
+                    <th scope="col" style="width: 40%;">제목</th>
+                    <th scope="col" style="width: 15%;">작성자</th>
+                    <th scope="col">작성일</th>
                     <?php if ($boardType === 'inquiry') : ?>
-                        <td><?php echo $post['inquiry_state']; ?></td>
+                    <th scope="col">문의상태</th>
                     <?php else : ?>
-                        <td><?php echo $post['likes']; ?></td>
+                        <th scope="col">추천수</th>
                     <?php endif; ?>
-                    <td><?php echo isset($post['views']) ? $post['views'] : 0; ?></td>
+                    <th scope="col">조회수</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($paginatedPosts as $idx => $post) : ?>
+                    <tr>
+                        <td><?php echo $post['id']; ?></td>
+                        <td><a href="post.php?id=<?php echo $post['id']; ?>&type=<?php echo $boardType; ?>"><?php echo $post['title']; ?></a></td>
+                        <td><?php echo $post['nickname']; ?></td>
+                        <td><?php echo $post['created_at']; ?></td>
+                        <?php if ($boardType === 'inquiry') : ?>
+                            <td><?php echo $post['inquiry_state']; ?></td>
+                        <?php else : ?>
+                            <td><?php echo $post['likes']; ?></td>
+                        <?php endif; ?>
+                        <td><?php echo isset($post['views']) ? $post['views'] : 0; ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
 
     <!-- 페이징 -->
     <nav aria-label="Page navigation">

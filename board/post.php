@@ -33,7 +33,6 @@ if ($aPostResult['result'] === false) {
 // 데이터 취득
 $postInfo = $aPostResult['data'];
 
-
 // 조회수 증가
 $oBoardService->increaseViewCount($postId);
 
@@ -106,6 +105,12 @@ if (isset($_GET['type']) && $_GET['type'] === 'inquiry' && $_SESSION['user_id'] 
                             <div class="col-md-12">
                                 <!-- 여기에서 content 출력 -->
                                 <p><?php echo nl2br($postInfo['content']); ?></p>
+                                <!-- 이미지 출력 부분 추가 -->
+                                <?php if (isset($postInfo['image_path'])) : ?>
+                                    <div class="text-center" style="margin-bottom: 10px;">
+                                        <img src="<?php echo $postInfo['image_path']; ?>" class="img-fluid" alt="게시글 이미지">
+                                    </div>
+                                <?php endif; ?>
                                 <div class="text-center">
                                 <?php if (isset($_GET['type']) && $_GET['type'] !== 'inquiry') : ?>
                                     <button type="button" class="btn <?php echo $bPostLiked ? 'btn-primary' : 'btn-outline-primary'; ?>" onclick="likePost(<?php echo $postInfo['id']; ?>)">

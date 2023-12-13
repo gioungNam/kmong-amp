@@ -261,7 +261,7 @@ class BoardModel {
         }
 
         $sQuery = "SELECT * FROM board_value WHERE board_id = $boardId AND 
-        type = '$sType LIMIT 1";
+        type = '$sType' limit 1";
 
         $oResult = $this->oDataBase->query($sQuery);
 

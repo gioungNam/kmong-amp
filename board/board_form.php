@@ -51,7 +51,7 @@ if ($updateType === 'update' && !empty($boardId)) {
 <div class="container mt-4">
     <h2 class="mb-3"><?php echo BoardConst::convertTypeToName($boardType); ?></h2>
 
-    <form id="boardForm" action="board_write.php" method="post">
+    <form id="boardForm" action="board_write.php" method="post" enctype="multipart/form-data">
         <input type="hidden" name="boardType" value="<?php echo $boardType; ?>">
         <input type="hidden" name="boardId" value="<?php echo $boardId; ?>">
         <input type="hidden" name="action" value="<?php echo $updateType; ?>">
@@ -65,13 +65,33 @@ if ($updateType === 'update' && !empty($boardId)) {
             <textarea class="form-control" id="content" name="content" rows="5" required><?php echo isset($postInfo['content']) ? trim($postInfo['content']) : ''; ?></textarea>
         </div>
 
+        <?php if ($boardType === 'img') : ?>
+            <div class="mb-3">
+                <label for="image" class="form-label">이미지</label>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+            </div>
+        <?php endif; ?>
+
         <button id="submitBtn" type="button" class="btn btn-primary">작성</button>
     </form>
 </div>
 
 <script>
     function submitBoardForm() {
-    var formData = new FormData(document.getElementById('boardForm'));
+        var formData = new FormData(document.getElementById('boardForm'));
+
+        <?php if ($boardType === 'img') : ?>
+            // 파일이 첨부되었는지 확인
+            var fileInput = document.getElementById('image');
+            if (fileInput && fileInput.files.length === 0) {
+                alert('이미지를 첨부해주세요.');
+                return;
+            }
+
+            formData.append('image', fileInput.files[0]);
+        <?php endif; ?>
+
+    
 
     $.ajax({
         type: "POST",

@@ -5,6 +5,7 @@
 
 require_once "../model/board_model.php";
 require_once "../model/member_model.php";
+require_once "member_service.php";
 require_once "../const/common.php";
 
 class BoardService {
@@ -19,6 +20,11 @@ class BoardService {
      */
     private $oMemberModel = null;
 
+    /**
+     * 회원 서비스 객체
+     */
+    private $oMemberService = null;
+
 
     public function __construct() {
         if ($this->oBoardModel == null) {
@@ -28,12 +34,17 @@ class BoardService {
         if ($this->oMemberModel == null) {
             $this->oMemberModel = new MemberModel();
         }
+
+        if ($this->oMemberService == null) {
+            $this->oMemberService = new MemberService();
+        }
     }
 
     /**
      * 게시글 작성
      */
     public function boardWrite($aFormData) {
+
         $aResult = array(
             'result' => false,
             'msg' => '' 
@@ -84,9 +95,6 @@ class BoardService {
         // 게시글 type
         $aData['board_type'] = $aFormData['boardType'];
 
-       
-
-
         if ($sAction === 'update') {
             if (empty($aFormData['boardId']) || !is_numeric($aFormData['boardId'])) {
                 $aResult['msg'] = '유효하지 않은 게시글 입니다.';
@@ -98,6 +106,26 @@ class BoardService {
 
         // 게시글 생성
         $aBoardResult = $this->oBoardModel->write($aData);
+
+        // 커마게시판인경우, 이미지도 저장 필요
+        if ($aFormData['boardType'] == 'img') {
+            // 사진 파일 업로드
+            if (empty($_FILES['image']['name']) === false) {
+                $aUploadResult = $this->oMemberService->uploadProfilePicture($_FILES['image']);
+            
+                // 실패시 반환
+                if ($aUploadResult['result'] === false) {
+                    $aResult['msg'] = $aUploadResult['msg'];
+                    return $aResult;
+                }
+
+                $sPath = isset($aUploadResult['path']) ? $aUploadResult['path'] : '';
+
+                // 사진 파일 경로 insert
+                $this->oBoardModel->insertBoardValue($aBoardResult['data']['board_id'], BoardConst::TYPE_IMG, $sPath);
+            }
+            
+        }
 
         return $aBoardResult;
         
@@ -127,12 +155,20 @@ class BoardService {
         }
 
         // inquiry 게시판의 경우 inquiry_state 값 가져오기
-    if ($sType === BoardConst::BOARD_INQUIRY) {
-        foreach ($aBoardList as &$board) {
-            $aBoardInfo = $this->oBoardModel->getCommentsByBoardId($board['id'], REPLY);
-            $board['inquiry_state'] = (is_array($aBoardInfo['data']) && count($aBoardInfo['data']) > 0) ? BoardConst::INQUIRY_COMPLETE : BoardConst::INQUIRY_WAIT;
+        if ($sType === BoardConst::BOARD_INQUIRY) {
+            foreach ($aBoardList as &$board) {
+                $aBoardInfo = $this->oBoardModel->getCommentsByBoardId($board['id'], REPLY);
+                $board['inquiry_state'] = (is_array($aBoardInfo['data']) && count($aBoardInfo['data']) > 0) ? BoardConst::INQUIRY_COMPLETE : BoardConst::INQUIRY_WAIT;
+            }
         }
-    }
+
+        // 커마게시판일 경우, 사진 가져오기
+        if ($sType === BoardConst::BOARD_IMAGE) {
+            foreach ($aBoardList as &$board) {
+                $aBoardInfo = $this->oBoardModel->getBoardValue($board['id'], BoardConst::TYPE_IMG);
+                $board['image_path'] = (is_array($aBoardInfo['data']) && count($aBoardInfo['data']) > 0) ? $aBoardInfo['data'][0]['value'] : null;
+            }
+        }
 
         return $aBoardList;
     }
@@ -159,6 +195,14 @@ class BoardService {
 
         // 게시글이 존재하는 경우
         if ($aBoard['result'] === true) {
+            // 이미지 가져오기
+            $aImage = $this->oBoardModel->getBoardValue($aBoard['data']['id'], BoardConst::TYPE_IMG);
+
+            // 이미지가 존재할 경우
+            if ($aImage['result'] === true && empty($aImage['data']) === false) {
+                $aBoard['data']['image_path'] = $aImage['data'][0]['value'];
+            }
+
             $aResult['result'] = true;
             $aResult['data'] = $aBoard['data'];
         } else {

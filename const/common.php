@@ -35,6 +35,12 @@ class BoardConst {
     // 게시판 타입 - 문의
     const BOARD_INQUIRY = 'inquiry';
 
+    // 게시판 타입 - 커마 게시판
+    const BOARD_IMAGE = 'img';
+
+    // 게시판 이미지 (커마게시판)
+    const TYPE_IMG = 'image';
+
 
     /**
      *  게시판 문의 타입 관련 상수 
