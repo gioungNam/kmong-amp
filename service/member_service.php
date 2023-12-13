@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once "../model/member_model.php";
+require_once "../const/common.php";
 
     class MemberService {
             
@@ -213,5 +214,66 @@ require_once "../model/member_model.php";
             }
 
             return $bReturn;
+        }
+
+        /**
+         * 게임 닉네임으로 유저 정보 조회
+         */
+        public function getMemberInfoByGameName($searchTerm) {
+            $aResult = array(
+                'result' => false,
+                'msg' => '',
+                'data' => array()
+            );
+        
+            // 게임 닉네임으로 회원 정보 조회
+            $aMemberInfo = $this->oMemberModel->selectMemberByGameName($searchTerm); 
+        
+            if (empty($aMemberInfo)) {
+                $aResult['msg'] = '해당하는 유저 정보가 없습니다.';
+                return $aResult;
+            }
+        
+            $aResult['result'] = true;
+            $aResult['data'] = $aMemberInfo;
+
+            // 방명록
+            $aResult['data']['guestbook'] = $this->getGuestBookByTargetUserId($aMemberInfo['user_id']);
+        
+            return $aResult;
+        }
+
+        /**
+         * 방명록 insert
+         */
+        public function insertGuestbook($toUserId, $message) {
+
+            return $this->oMemberModel->insertGuestbook($toUserId, $_SESSION['user_id'], $message);
+        }
+
+
+        /**
+         * 해당 대상 ID의 방명록 정보 가져오기
+         */
+        public function getGuestBookByTargetUserId ($sUserId) {
+            $aReturn = array();
+
+           if  (empty($sUserId) ) {
+                return array();
+           }
+
+           $aMemberValue = $this->oMemberModel->getAllMemberValueByIdAndType($sUserId, COMMENT);
+        
+           // 각 방명록에 적혀진 유저 정보 조회
+           foreach ($aMemberValue['data'] as $aValue) {
+                $aMemberInfo = $this->oMemberModel->selectMemberByMemberId($aValue['mapping_id']);
+
+                if (empty($aMemberInfo) === false) {
+                    $aMemberInfo['comment'] = $aValue['value'];
+                    $aReturn[] = $aMemberInfo;
+                }
+           }
+
+           return $aReturn;
         }
     }

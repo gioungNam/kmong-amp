@@ -53,7 +53,7 @@
                     <a class="nav-link fw-bold <?php echo (isset($_GET['type']) && $_GET['type'] == 'inquiry') ? 'text-white' : ''; ?>" href="../board/board.php?type=inquiry">문의</a>
                 </li>
                 <li class="nav-item text-center <?php echo (isset($_GET['type']) && $_GET['type'] == 'search') ? 'bg-primary' : ''; ?>">
-                    <a class="nav-link fw-bold <?php echo (isset($_GET['type']) && $_GET['type'] == 'search') ? 'text-white' : ''; ?>" href="../board/board.php?type=search">검색/의견등록</a>
+                    <a class="nav-link fw-bold <?php echo (isset($_GET['type']) && $_GET['type'] == 'search') ? 'text-white' : ''; ?>" href="../board/search.php?type=search">검색/의견등록</a>
                 </li>
             </ul>
             </div>

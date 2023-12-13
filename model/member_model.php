@@ -29,12 +29,8 @@ class MemberModel {
 
         // 결과값이 있는 경우
         if ($result->num_rows > 0) {
-            // 순회해서 return 값 세팅
-            while($aRow = $result->fetch_assoc()) {
-                foreach ($aRow as $sKey => $mValue) {
-                    $aReturn[$sKey] = $mValue;
-                }
-            }
+            return $result->fetch_assoc();
+             
         } 
 
 
@@ -84,7 +80,7 @@ class MemberModel {
             'data' => array()
         );
     
-        // 게시글 조회 쿼리 (board와 member 테이블 조인)
+        
         $sQuery = "SELECT *  
                    FROM member_value
                    WHERE user_id = '$sUserId' and type = '$sType'";
@@ -98,6 +94,42 @@ class MemberModel {
             // 순회해서 return 값 세팅
             while($aRow = $oResult->fetch_assoc()) {
                 $aReturn[] = $aRow['value'];
+            }
+            $aResult['result'] = true;
+            $aResult['data'] = $aReturn;
+        } else {
+            $aResult['msg'] = "관련 정보가 없습니다.";
+        }
+    
+        return $aResult;
+
+    }
+
+    /**
+     * member value 전체조회
+     */
+    public function getAllMemberValueByIdAndType ($sUserId, $sType) {
+
+        $aResult = array(
+            'result' => false,
+            'msg' => '',
+            'data' => array()
+        );
+    
+        
+        $sQuery = "SELECT *  
+                   FROM member_value
+                   WHERE user_id = '$sUserId' and type = '$sType'";
+    
+        // 쿼리 실행
+        $oResult = $this->oDataBase->query($sQuery);
+    
+        // 결과값이 있는 경우
+        $aReturn = array();
+        if ($oResult && $oResult->num_rows > 0) {
+            // 순회해서 return 값 세팅
+            while($aRow = $oResult->fetch_assoc()) {
+                $aReturn[] = $aRow;
             }
             $aResult['result'] = true;
             $aResult['data'] = $aReturn;
@@ -134,6 +166,71 @@ class MemberModel {
             $result['msg'] = "데이터 삽입 중 오류가 발생했습니다.";
         } else {
             $result['result'] = true;
+        }
+
+        $stmt->close();
+
+        return $result;
+    }
+
+
+    /**
+     * 게임 닉네임으로 해당하는 member 정보 반환
+     */
+    public function selectMemberByGameName($gameName) {
+        $aReturn = array();
+
+        $sQuery = "SELECT * FROM member WHERE game_nickname = '$gameName'";
+        $result = $this->oDataBase->query($sQuery);
+
+        // 결과값이 있는 경우
+        if ($result->num_rows > 0) {
+            // 값 리턴
+            $aReturn = $result->fetch_assoc();
+            
+        }
+
+        return empty($aReturn) ? array() : $aReturn;
+    }
+
+
+    /**
+     * 방명록을 추가하는 메서드
+     */
+    public function insertGuestbook($toUserId, $fromUserId, $message) {
+        $result = array(
+            'result' => false,
+            'msg' => ''
+        );
+
+        // 인수 체크
+        if (empty($toUserId) || empty($fromUserId) || empty($message)) {
+            $result['msg'] = '필수값이 누락되었습니다.';
+            return $result;
+        }
+
+        // member_value 테이블에 방명록 추가
+        $query = "INSERT INTO member_value (user_id, type, value, mapping_id) 
+                VALUES (?, 'comment', ?, ?)";
+        $stmt = $this->oDataBase->prepare($query);
+
+        if ($stmt === false) {
+            $result['msg'] = "쿼리 준비 중 오류가 발생했습니다.";
+            return $result;
+        }
+
+        $stmt->bind_param("sss", $toUserId, $message, $fromUserId);
+        $stmt->execute();
+
+        if ($stmt->error) {
+            $result['msg'] = "방명록을 추가하는 중 오류가 발생했습니다.";
+        } else {
+            $result['result'] = true;
+            $result['msg'] = "방명록이 성공적으로 추가되었습니다.";
+            $result['data'] = array(
+                'id' => $stmt->insert_id,
+                'comment' => $message
+            ); 
         }
 
         $stmt->close();

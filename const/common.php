@@ -25,6 +25,9 @@ const REPLY = "reply";
 // 좋아요
 const LIKES = "likes";
 
+// 방명록
+const COMMENT = "comment";
+
 
 class BoardConst {
 

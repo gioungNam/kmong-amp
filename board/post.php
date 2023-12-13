@@ -181,7 +181,7 @@ if (isset($_GET['type']) && $_GET['type'] === 'inquiry' && $_SESSION['user_id'] 
     // 코멘트 작성
     function submitComment() {
         var boardId = <?php echo $postInfo['id']; ?>;
-        var comment = $('#comment').val().trim();;
+        var comment = $('#comment').val().trim();
 
         // 빈값체크
         if (comment == '') {
