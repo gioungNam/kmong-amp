@@ -49,7 +49,11 @@ $paginatedPosts = array_slice($posts, $start, $perPage);
 <div class="container mt-4">
     <div class="d-flex justify-content-between mb-3">
         <h2 class="mb-3"><?php echo BoardConst::convertTypeToName($boardType); ?></h2>
-        <a href="board_form.php?type=<?php echo $boardType; ?>" class="btn btn-primary">글쓰기</a>
+        <?php
+        // $boardType이 'notice'일 경우 어드민 유저인 경우에만 '글쓰기' 버튼을 노출
+        if ($boardType === 'notice' && $_SESSION['user_id'] === 'admin' || $boardType != 'notice') : ?>
+            <a href="board_form.php?type=<?php echo $boardType; ?>" class="btn btn-primary">글쓰기</a>            
+        <?php endif; ?>
     </div>
 
     <!-- 게시글 목록 표시 -->
@@ -60,18 +64,26 @@ $paginatedPosts = array_slice($posts, $start, $perPage);
                 <th scope="col" style="width: 40%;">제목</th>
                 <th scope="col" style="width: 15%;">작성자</th>
                 <th scope="col">작성일</th>
-                <th scope="col">추천수</th>
+                <?php if ($boardType === 'inquiry') : ?>
+                <th scope="col">문의상태</th>
+                <?php else : ?>
+                    <th scope="col">추천수</th>
+                <?php endif; ?>
                 <th scope="col">조회수</th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($paginatedPosts as $post) : ?>
+            <?php foreach ($paginatedPosts as $idx => $post) : ?>
                 <tr>
                     <td><?php echo $post['id']; ?></td>
-                    <td><a href="post.php?id=<?php echo $post['id']; ?>"><?php echo $post['title']; ?></a></td>
+                    <td><a href="post.php?id=<?php echo $post['id']; ?>&type=<?php echo $boardType; ?>"><?php echo $post['title']; ?></a></td>
                     <td><?php echo $post['nickname']; ?></td>
                     <td><?php echo $post['created_at']; ?></td>
-                    <td><?php echo $post['likes']; ?></td>
+                    <?php if ($boardType === 'inquiry') : ?>
+                        <td><?php echo $post['inquiry_state']; ?></td>
+                    <?php else : ?>
+                        <td><?php echo $post['likes']; ?></td>
+                    <?php endif; ?>
                     <td><?php echo isset($post['views']) ? $post['views'] : 0; ?></td>
                 </tr>
             <?php endforeach; ?>

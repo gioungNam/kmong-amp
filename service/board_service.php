@@ -58,16 +58,16 @@ class BoardService {
             return $aResult;
         }
 
+        // action여부 체크
+        $sAction = isset($aFormData['action']) ? $aFormData['action'] : '';
+
         // 필수값 체크
         $aRequiredList = array(
             'title' => '제목',
             'content' => '내용'
         );
 
-        // form 데이터 담을 array 변수
-        $aData = array(
-            'member_grade' => 'basic'
-        );
+        $aData = array();
 
         foreach ($aRequiredList as $sKey => $sName) {
             if (empty($aFormData[$sKey]))  {
@@ -79,14 +79,27 @@ class BoardService {
             $aData[$sKey] = $aFormData[$sKey];
         }
 
+        // 회원 등급 (basic : 일반, admin : 운영자)
+        $aData['member_grade'] = 'basic';
         // 게시글 type
         $aData['board_type'] = $aFormData['boardType'];
 
        
 
 
+        if ($sAction === 'update') {
+            if (empty($aFormData['boardId']) || !is_numeric($aFormData['boardId'])) {
+                $aResult['msg'] = '유효하지 않은 게시글 입니다.';
+                return $aResult;
+            }
+
+            return $this->updateBoard($aFormData['boardId'], $aData);
+        }
+
         // 게시글 생성
-        return $this->oBoardModel->write($aData);
+        $aBoardResult = $this->oBoardModel->write($aData);
+
+        return $aBoardResult;
         
     }
 
@@ -112,6 +125,14 @@ class BoardService {
         if (is_array($aBoardList) === false || count($aBoardList) <= 0) {
             return array();
         }
+
+        // inquiry 게시판의 경우 inquiry_state 값 가져오기
+    if ($sType === BoardConst::BOARD_INQUIRY) {
+        foreach ($aBoardList as &$board) {
+            $aBoardInfo = $this->oBoardModel->getCommentsByBoardId($board['id'], REPLY);
+            $board['inquiry_state'] = (is_array($aBoardInfo['data']) && count($aBoardInfo['data']) > 0) ? BoardConst::INQUIRY_COMPLETE : BoardConst::INQUIRY_WAIT;
+        }
+    }
 
         return $aBoardList;
     }
@@ -162,6 +183,26 @@ class BoardService {
     }
 
     /**
+     * 게시글 삭제
+     */
+    public function deleteBoard($boardId) {
+        $aResult = array(
+            'result' => false,
+            'msg' => '',
+            'data' => array()
+        );
+
+        if (empty($boardId) || !is_numeric($boardId)) {
+            $aResult['msg'] = '유효하지 않은 게시글 입니다.';
+            return $aResult;
+        }
+
+
+        return $this->oBoardModel->deleteBoard($boardId); 
+    }
+
+
+    /**
      * 댓글 추가
      */
     public function addComment($boardId, $type, $value, $mappingId) {
@@ -185,7 +226,7 @@ class BoardService {
             return $aResult;
         }
 
-        return $this->oBoardModel->addComment($boardId, $type, $value, $mappingId);
+        return $this->oBoardModel->insertBoardValue($boardId, $type, $value, $mappingId);
     }
 
 
@@ -271,6 +312,61 @@ class BoardService {
             'result' => true,
             'data' => $aLikeResult['data']
         );
+    }
+
+
+    /**
+     * 댓글 삭제
+     */
+    public function removeComment($commentId)
+    {
+        $aResult = array(
+            'result' => false,
+            'msg' => ''
+        );
+
+        $oBoardModel = new BoardModel();
+        $response = $oBoardModel->removeComment($commentId); 
+
+        if ($response['result']) {
+            $aResult['result'] = true;
+        } else {
+            $aResult['msg'] = $response['msg'];
+        }
+
+        return $aResult;
+    }
+
+
+    /**
+     * 게시글 업데이트
+     */
+    private function updateBoard($boardId, $aData)
+    {
+        $aResult = array(
+            'result' => false,
+            'msg' => '' 
+        );
+
+        if (empty($boardId) || !is_numeric($boardId)) {
+            $aResult['msg'] = '유효하지 않은 게시글 입니다.';
+            return $aResult;
+        }
+
+        // 필요한 데이터 확인 및 처리
+
+        $aUpdateData = array(
+            'title' => $aData['title'],
+            'content' => $aData['content'],
+        ); 
+
+        $bResult = $this->oBoardModel->updateBoard($boardId, $aUpdateData);
+
+        if ($bResult) {
+            return array('result' => true, 'msg' => '게시글이 수정되었습니다.', 'data' => array('board_id' => $boardId));
+        } else {
+            return array('result' => false, 'msg' => '게시글 수정에 실패했습니다.');
+        }
     }
 }
 

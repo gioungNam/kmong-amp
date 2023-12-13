@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once '../template/header.php';
 require_once '../const/common.php';
+require_once '../service/board_service.php';
 
 // 상수로 정의된 게시판 타입 배열
 $validBoardTypes = [
@@ -23,6 +24,28 @@ if (empty($boardType)) {
     echo '<script>alert("잘못된 접근입니다."); window.location.href = "/";</script>';
     exit;
 }
+
+// 게시글 ID 및 type 체크
+$boardId = isset($_GET['id']) ? $_GET['id'] : null;
+$updateType = isset($_GET['action']) ? $_GET['action'] : '';
+
+
+
+
+// 수정 모드인 경우, 게시글 정보 가져오기
+$postInfo = array();
+if ($updateType === 'update' && !empty($boardId)) {
+    $oBoardService = new BoardService();
+    $postResult = $oBoardService->getBoardById($boardId);
+
+    if ($postResult['result']) {
+        $postInfo = $postResult['data'];
+    } else {
+        echo '<script>alert("게시글을 찾을 수 없습니다."); window.location.href = "/";</script>';
+        exit;
+    }
+}
+
 ?>
 
 <div class="container mt-4">
@@ -30,14 +53,16 @@ if (empty($boardType)) {
 
     <form id="boardForm" action="board_write.php" method="post">
         <input type="hidden" name="boardType" value="<?php echo $boardType; ?>">
+        <input type="hidden" name="boardId" value="<?php echo $boardId; ?>">
+        <input type="hidden" name="action" value="<?php echo $updateType; ?>">
         <div class="mb-3">
             <label for="title" class="form-label">제목</label>
-            <input type="text" class="form-control" id="title" name="title" required>
+            <input type="text" class="form-control" id="title" name="title" value="<?php echo isset($postInfo['title']) ? $postInfo['title'] : ''; ?>" required>
         </div>
 
         <div class="mb-3">
             <label for="content" class="form-label">내용</label>
-            <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+            <textarea class="form-control" id="content" name="content" rows="5" required><?php echo isset($postInfo['content']) ? trim($postInfo['content']) : ''; ?></textarea>
         </div>
 
         <button id="submitBtn" type="button" class="btn btn-primary">작성</button>
@@ -60,8 +85,12 @@ if (empty($boardType)) {
             if (res.result === false) {
                 alert(res.msg);
             } else {
-                // 성공시, 메인 페이지 이동
-                window.location.href = "board.php?type=" + res.data.board_type;
+                // 성공시, 수정 모드인 경우와 아닌 경우에 따라 리다이렉트
+                if ("<?php echo $updateType; ?>" === "update") {
+                    window.location.href = "post.php?id=" + res.data.board_id;
+                } else {
+                    window.location.href = "board.php?type=" + res.data.board_type;
+                }
             }
         },
         error: function (xhr, status, error) {

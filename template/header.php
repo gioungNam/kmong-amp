@@ -39,23 +39,23 @@
         </header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-3 py-1">
             <div class="container justify-content-center">
-                <ul class="navbar-nav justify-content-between" style="width: 100%">
-                    <li class="nav-item text-center">
-                        <a class="nav-link fw-bold" href="../board/board.php?type=notice">공지사항</a>
-                    </li>
-                    <li class="nav-item text-center">
-                        <a class="nav-link fw-bold" href="../board/board.php?type=free">자유게시판</a>
-                    </li>
-                    <li class="nav-item text-center">
-                        <a class="nav-link fw-bold" href="../board/board.php?type=img">커마게시판</a>
-                    </li>
-                    <li class="nav-item text-center">
-                        <a class="nav-link fw-bold" href="../board/board.php?type=inquiry">문의</a>
-                    </li>
-                    <li class="nav-item text-center">
-                        <a class="nav-link fw-bold" href="../board/board.php?type=search">검색/의견등록</a>
-                    </li>
-                </ul>
+            <ul class="navbar-nav justify-content-between" style="width: 100%">
+                <li class="nav-item text-center <?php echo (isset($_GET['type']) && $_GET['type'] == 'notice') ? 'bg-primary' : ''; ?>">
+                    <a class="nav-link fw-bold <?php echo (isset($_GET['type']) && $_GET['type'] == 'notice') ? 'text-white' : ''; ?>" href="../board/board.php?type=notice">공지사항</a>
+                </li>
+                <li class="nav-item text-center <?php echo (isset($_GET['type']) && $_GET['type'] == 'free') ? 'bg-primary' : ''; ?>">
+                    <a class="nav-link fw-bold <?php echo (isset($_GET['type']) && $_GET['type'] == 'free') ? 'text-white' : ''; ?>" href="../board/board.php?type=free">자유게시판</a>
+                </li>
+                <li class="nav-item text-center <?php echo (isset($_GET['type']) && $_GET['type'] == 'img') ? 'bg-primary' : ''; ?>">
+                    <a class="nav-link fw-bold <?php echo (isset($_GET['type']) && $_GET['type'] == 'img') ? 'text-white' : ''; ?>" href="../board/board.php?type=img">커마게시판</a>
+                </li>
+                <li class="nav-item text-center <?php echo (isset($_GET['type']) && $_GET['type'] == 'inquiry') ? 'bg-primary' : ''; ?>">
+                    <a class="nav-link fw-bold <?php echo (isset($_GET['type']) && $_GET['type'] == 'inquiry') ? 'text-white' : ''; ?>" href="../board/board.php?type=inquiry">문의</a>
+                </li>
+                <li class="nav-item text-center <?php echo (isset($_GET['type']) && $_GET['type'] == 'search') ? 'bg-primary' : ''; ?>">
+                    <a class="nav-link fw-bold <?php echo (isset($_GET['type']) && $_GET['type'] == 'search') ? 'text-white' : ''; ?>" href="../board/board.php?type=search">검색/의견등록</a>
+                </li>
+            </ul>
             </div>
         </nav>
         <script

@@ -1,8 +1,10 @@
+
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once '../template/header.php';
 require_once '../const/common.php';
 require_once '../service/board_service.php';
 require_once '../service/member_service.php';
@@ -35,7 +37,19 @@ $postInfo = $aPostResult['data'];
 // 조회수 증가
 $oBoardService->increaseViewCount($postId);
 
-require_once '../template/header.php';
+// 댓글 작성 가능 여부 (문의 post인 경우)
+$bComment = true;
+
+// 로그인 안되어 있는 경우 댓글 작성 불가
+if (!isset($_SESSION['user_id'])) {
+    $bComment = false;
+}
+
+// 문의 post인 경우, 관리자가 아닌경우 댓글 작성 불가
+if (isset($_GET['type']) && $_GET['type'] === 'inquiry' && $_SESSION['user_id'] != 'admin') {
+    $bComment = false;
+}
+
 ?>
 
 <style>
@@ -43,11 +57,23 @@ require_once '../template/header.php';
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        min-height: 100vh;
     }
 
     .comment-divider {
         border-top: 1px solid #dee2e6;
+    }
+
+
+    #commentList {
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    }
+
+    .list-group-item {
+        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
     }
 </style>
 
@@ -69,8 +95,8 @@ require_once '../template/header.php';
                             if (isset($_SESSION['user_id']) && ($_SESSION['user_id'] === $postInfo['user_id'] || $_SESSION['user_id'] == 'admin')) :
                             ?>
                             <div class="mb-0 p-2">
-                                    <button class="btn btn-outline-primary" onclick="editPost()">수정</button>
-                                    <button class="btn btn-outline-danger" onclick="deletePost()">삭제</button>
+                                    <button class="btn btn-outline-primary" onclick="editPost(<?php echo $postInfo['id']; ?>)">수정</button>
+                                    <button class="btn btn-outline-danger" onclick="deletePost(<?php echo $postInfo['id']; ?>)">삭제</button>
                             </div>
                             <?php endif; ?>                  
 
@@ -81,9 +107,11 @@ require_once '../template/header.php';
                                 <!-- 여기에서 content 출력 -->
                                 <p><?php echo nl2br($postInfo['content']); ?></p>
                                 <div class="text-center">
-                                <button type="button" class="btn <?php echo $bPostLiked ? 'btn-primary' : 'btn-outline-primary'; ?>" onclick="likePost(<?php echo $postInfo['id']; ?>)">
-                                    <i class="bi bi-hand-thumbs-up"></i> 좋아요 <small id="likeCount">(<?php echo $postInfo['likes']; ?>)</small>
-                                </button>
+                                <?php if (isset($_GET['type']) && $_GET['type'] !== 'inquiry') : ?>
+                                    <button type="button" class="btn <?php echo $bPostLiked ? 'btn-primary' : 'btn-outline-primary'; ?>" onclick="likePost(<?php echo $postInfo['id']; ?>)">
+                                        <i class="bi bi-hand-thumbs-up"></i> 좋아요 <small id="likeCount">(<?php echo $postInfo['likes']; ?>)</small>
+                                    </button>
+                                <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -92,7 +120,7 @@ require_once '../template/header.php';
                 <!-- 댓글 목록 -->
                 <div class="mt-4">
                     <div class="card-body comment-divider">
-                        <h5 class="card-title">댓글</h5>
+                        <h5 class="card-title"><?php echo (isset($_GET['type']) && $_GET['type'] === 'inquiry') ? '답변' : '댓글' ?></h5>
                         <ul class="list-group" id="commentList">
                             <!-- 댓글 목록은 AJAX로 동적으로 가져올 예정 -->
                         </ul>
@@ -100,10 +128,10 @@ require_once '../template/header.php';
                 </div>
 
                 <!-- 댓글 입력창 -->
-                <?php if (isset($_SESSION['user_id'])) : ?>
+                <?php if ($bComment === true) : ?>
                     <div class="mt-4">
                         <div class="card-body comment-divider">
-                            <h5 class="card-title">댓글 작성</h5>
+                            <h5 class="card-title"><?php echo (isset($_GET['type']) && $_GET['type'] === 'inquiry') ? '답변 작성' : '댓글 작성' ?></h5>
                             <form id="commentForm">
                                 <div class="mb-3">
                                     <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
@@ -112,8 +140,6 @@ require_once '../template/header.php';
                             </form>
                         </div>
                     </div>
-                <?php else : ?>
-                    <p class="text-muted mt-4">댓글을 작성하려면 로그인이 필요합니다.</p>
                 <?php endif; ?>
             </div>
             </div>
@@ -129,7 +155,6 @@ require_once '../template/header.php';
             data: { boardId: boardId },
             dataType: 'json',
             success: function(response) {
-                console.log(response);
                 if (response.result) {
                     // 성공 시 좋아요 수 업데이트
                     $('#likeCount').text('(' + response.data.likes + ')');
@@ -151,7 +176,13 @@ require_once '../template/header.php';
     // 코멘트 작성
     function submitComment() {
         var boardId = <?php echo $postInfo['id']; ?>;
-        var comment = $('#comment').val();
+        var comment = $('#comment').val().trim();;
+
+        // 빈값체크
+        if (comment == '') {
+            alert('코멘트 내용을 입력해야 합니다.');
+            return;
+        }
 
         $.ajax({
             type: 'POST',
@@ -160,6 +191,8 @@ require_once '../template/header.php';
             dataType: 'json',
             success: function(response) {
                 if (response.result) {
+                    // 댓글 입력창 초기화
+                    $('#comment').val('');
                     // 성공 시 댓글 목록 업데이트
                     loadComments(boardId);
                 } else {
@@ -200,10 +233,52 @@ require_once '../template/header.php';
         commentList.empty();
 
         for (var i = 0; i < comments.length; i++) {
-            var commentItem = $('<li class="list-group-item"></li>');
-            commentItem.text(comments[i].value);
-            commentList.append(commentItem);
-        }
+        var commentItem = $('<li class="list-group-item"></li>');
+
+        // 첫 번째 row (유저 닉네임과 작성일자)
+        var userInfoRow = $('<div class="row"></div>');
+        var userNicknameCol = $('<div class="col-md-6 fw-bold small"></div>').text(comments[i].nickname);
+        var commentDateCol = $('<div class="col-md-6 text-right text-muted small"></div>').text(comments[i].comment_created_at);
+        userInfoRow.append(userNicknameCol, commentDateCol);
+
+        // 두 번째 row (댓글 내용)
+        var commentContentRow = $('<div class="row"></div>');
+        var commentContentCol = $('<div class="col-md-12 small"></div>').text(comments[i].value);
+        commentContentRow.append(commentContentCol);
+
+        // 삭제 버튼 (세션과 사용자 ID 비교 후 노출 여부 결정)
+        if ((comments[i].mapping_id === '<?php echo $_SESSION['user_id']; ?>')) {
+            var deleteButton = $('<div class="col-md-12"><button class="btn btn-danger btn-sm float-right" onclick="deleteComment(' + comments[i].id + ')">삭제</button></div>');
+            commentContentRow.append(deleteButton);
+        } 
+        
+
+        // 두 row를 하나의 li에 추가
+        commentItem.append(userInfoRow, commentContentRow);
+
+        commentList.append(commentItem);
+    }
+    }
+
+    // 댓글 삭제
+    function deleteComment(commentId) {
+        $.ajax({
+            type: 'POST',
+            url: 'remove_comment.php',
+            data: { commentId: commentId },
+            dataType: 'json',
+            success: function (response) {
+                if (response.result) {
+                    // 성공 시 댓글 목록 업데이트
+                    loadComments(<?php echo $postInfo['id']; ?>);
+                } else {
+                    alert(response.msg);
+                }
+            },
+            error: function () {
+                alert('댓글 삭제 중 오류가 발생했습니다.');
+            }
+        });
     }
 
     // 초기 로딩 시 댓글 목록 가져오기
@@ -214,9 +289,8 @@ require_once '../template/header.php';
 
 
     function editPost(postId) {
-        // 게시글 수정 로직
         // postId를 이용해 수정할 게시글의 식별 정보 전달
-        window.location.href = "edit_post.php?id=" + postId;
+        window.location.href = 'board_form.php?id=' + postId + '&action=update&type=<?php echo $postInfo['board_type']; ?>';
     }
 
     function deletePost(postId) {
@@ -224,9 +298,27 @@ require_once '../template/header.php';
         // postId를 이용해 삭제할 게시글의 식별 정보 전달
         if (confirm("정말로 삭제하시겠습니까?")) {
             // 확인 버튼 클릭 시 삭제 처리
-            // AJAX 등을 사용하여 서버에 삭제 요청을 보낼 수 있음
-            alert("삭제되었습니다.");
-            window.location.href = "/";
+            $.ajax({
+                type: 'POST',
+                url: 'remove_post.php',
+                data: { id: postId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.result) {
+                        // 성공 시 알림 후 페이지 목록으로 이동 처리
+                        alert(response.msg);
+                        window.location.href = "board.php?type=<?php echo $postInfo['board_type']; ?>";
+                    } else {
+                        // 실패시
+                        alert(response.msg);
+                    }
+                },
+                error: function() {
+                    alert('게시글 삭제 중 오류가 발생했습니다.');
+                }
+            });
         }
     }
 </script>
+
+

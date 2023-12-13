@@ -29,6 +29,24 @@ const LIKES = "likes";
 class BoardConst {
 
     /**
+     * 게시판 eav 관련 상수
+     */
+
+    // 게시판 타입 - 문의
+    const BOARD_INQUIRY = 'inquiry';
+
+
+    /**
+     *  게시판 문의 타입 관련 상수 
+     * */ 
+
+    // 대기중
+    const INQUIRY_WAIT = '대기중';
+
+    // 완료
+    const INQUIRY_COMPLETE = '완료';
+
+    /**
      * 정의된 게시판 type
      */
     public static function getBoardType() {
@@ -54,7 +72,7 @@ class BoardConst {
     /**
      * 게시판 type을 name으로 변환
      */
-    public static function convertTypeToName(String $type) {
+    public static function convertTypeToName($type) {
     
         $aConvertInfo = array(
             'notice' => '공지 사항',
@@ -70,4 +88,5 @@ class BoardConst {
 
         return '';
     }
+
 }
