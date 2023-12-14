@@ -132,6 +132,27 @@ if (isset($_GET['type']) && $_GET['type'] === 'inquiry' && $_SESSION['user_id'] 
                     </div>
                 </div>
 
+                <!-- 댓글 수정창의 HTML 부분 -->
+                <div id="edit-comment-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCommentModalLabel" aria-hidden="true">
+                    
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editCommentModalLabel">댓글 수정</h5>
+                            </div>
+                            <div class="modal-body">
+                                <!-- 수정할 댓글 내용 입력 폼 -->
+                                <textarea id="edited-comment-content" class="form-control" rows="5"></textarea>
+                                <input type="hidden" id="edit-comment-id" value="">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="edit-comment-submit-btn" onclick="handleEditCommentSubmitButtonClick()">완료</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
                 <!-- 댓글 입력창 -->
                 <?php if ($bComment === true) : ?>
                     <div class="mt-4">
@@ -152,6 +173,50 @@ if (isset($_GET['type']) && $_GET['type'] === 'inquiry' && $_SESSION['user_id'] 
 </div>
 <script>
 
+        // 댓글 수정 버튼 클릭 이벤트
+        function handleEditCommentButtonClick(commentId) {
+            var commentContent = $('#content-'+commentId).text(); // 수정할 댓글 내용 가져오기
+            
+            $('#edit-comment-id').val(commentId);
+            $('#edited-comment-content').val(commentContent);
+
+            // 모달 보이도록 설정
+            $('#edit-comment-modal').modal('show');
+        }
+
+
+        // 완료 버튼 클릭 이벤트
+        function handleEditCommentSubmitButtonClick() {
+            var commentId = $('#edit-comment-id').val();
+            var editedContent = $('#edited-comment-content').val();
+
+            // AJAX를 사용하여 업데이트 처리
+            $.ajax({
+                url: 'update_comment.php',
+                type: 'POST',
+                data: {
+                    commentId: commentId, editedContent: editedContent
+                },
+                dataType: 'json',
+                success: function (response) {
+                    // AJAX 성공 시 동작
+                    if (response.result) {
+                        // 수정된 댓글 내용으로 업데이트
+                        $('#content-' + commentId).text(editedContent);
+
+                        // 모달 닫기
+                        $('#edit-comment-modal').modal('hide');
+                    } else {
+                        // 실패 시 처리 (예: 에러 메시지 출력)
+                        console.error('댓글 수정 실패:', response.msg);
+                    }
+                },
+                error: function (error) {
+                    // 오류 시의 동작
+                    console.error(error);
+                }
+            });
+        }
     function likePost(boardId) {
         // Ajax를 통한 좋아요 처리
         $.ajax({
@@ -248,12 +313,19 @@ if (isset($_GET['type']) && $_GET['type'] === 'inquiry' && $_SESSION['user_id'] 
 
         // 두 번째 row (댓글 내용)
         var commentContentRow = $('<div class="row"></div>');
-        var commentContentCol = $('<div class="col-md-12 small"></div>').text(comments[i].value);
+        var commentContentCol = $('<div id="content-'+comments[i].id+'" class="col-md-12 small"></div>').text(comments[i].value);
         commentContentRow.append(commentContentCol);
 
         // 삭제 버튼 (세션과 사용자 ID 비교 후 노출 여부 결정)
-        if ((comments[i].mapping_id === '<?php echo $_SESSION['user_id']; ?>')) {
-            var deleteButton = $('<div class="col-md-12"><button class="btn btn-danger btn-sm float-right" onclick="deleteComment(' + comments[i].id + ')">삭제</button></div>');
+        if ((comments[i].mapping_id === '<?php echo $_SESSION['user_id']; ?>') || ('<?php echo $_SESSION['user_id']; ?>' === 'admin')) {
+            
+            // 해당 유저만 수정 가능
+            if (comments[i].mapping_id === '<?php echo $_SESSION['user_id']; ?>') {
+                var editButton = $('<div class="col-auto px-1"><button class="btn btn-warning btn-sm float-right edit-comment-btn" data-comment-id="' + comments[i].id + '" onclick="handleEditCommentButtonClick('+comments[i].id+')">수정</button></div>');
+                commentContentRow.append(editButton);
+            }
+            
+            var deleteButton = $('<div class="col-auto px-1"><button class="btn btn-danger btn-sm float-right" onclick="deleteComment(' + comments[i].id + ')">삭제</button></div>');
             commentContentRow.append(deleteButton);
         } 
         
@@ -263,6 +335,13 @@ if (isset($_GET['type']) && $_GET['type'] === 'inquiry' && $_SESSION['user_id'] 
 
         commentList.append(commentItem);
     }
+    }
+
+    // 댓글 수정을 위한 함수
+    function editComment(commentId, updatedContent) {
+        // 수정된 댓글 내용을 서버에 전송하는 로직을 추가해야 합니다.
+        // 이 예시에서는 단순히 예시로 주어진 메시지를 반환합니다.
+        return "댓글 수정 성공!";
     }
 
     // 댓글 삭제

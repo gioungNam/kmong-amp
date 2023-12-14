@@ -364,6 +364,43 @@ class BoardModel {
         return $aResult;
     }
 
+    /**
+     * 댓글 수정
+     */
+    public function updateComment($commentId, $editedContent)
+    {
+        $aResult = array(
+            'result' => false,
+            'msg' => ''
+        );
+
+        if (empty($commentId) || empty($editedContent)) {
+            $aResult['msg'] = '올바른 요청이 아닙니다.';
+            return $aResult;
+        }
+
+        // 댓글 수정 쿼리 작성
+        $sQuery = "UPDATE board_value SET value = ? WHERE id = ? AND type = 'reply'";
+
+        // prepare statement 생성
+        $oStmt = $this->oDataBase->prepare($sQuery);
+
+        // 바인딩
+        $oStmt->bind_param("si", $editedContent, $commentId);
+
+        // execute 실행
+        if ($oStmt->execute()) {
+            $aResult['result'] = true;
+        } else {
+            $aResult['msg'] = "댓글 수정 중 오류가 발생했습니다.";
+        }
+
+        // statement 종료
+        $oStmt->close();
+
+        return $aResult;
+    }
+
     public function __destruct() {
         $this->oDataBase->close();
     }

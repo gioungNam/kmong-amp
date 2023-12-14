@@ -412,6 +412,14 @@ class BoardService {
             return array('result' => false, 'msg' => '게시글 수정에 실패했습니다.');
         }
     }
+
+    /**
+     * 코멘트 업데이트
+     */
+    function updateComment($commentId, $editedContent) {
+        $boardModel = new BoardModel();
+        return $boardModel->updateComment($commentId, $editedContent);
+    }
 }
 
 
