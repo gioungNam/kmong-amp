@@ -225,6 +225,11 @@ require_once "../const/common.php";
                 'msg' => '',
                 'data' => array()
             );
+
+            // 좋아요 1증가
+            if (empty($searchTerm) === false) {
+                $aTest = $this->memberLike($searchTerm);
+            }
         
             // 게임 닉네임으로 회원 정보 조회
             $aMemberInfo = $this->oMemberModel->selectMemberByGameName($searchTerm); 
@@ -240,6 +245,7 @@ require_once "../const/common.php";
             // 방명록
             $aResult['data']['guestbook'] = $this->getGuestBookByTargetUserId($aMemberInfo['user_id']);
         
+
             return $aResult;
         }
 
@@ -275,5 +281,26 @@ require_once "../const/common.php";
            }
 
            return $aReturn;
+        }
+
+
+        /**
+         * 회원 좋아요
+         */
+        public function memberLike ($userGameName) {
+            $aResult = array(
+                'result' => false,
+                'msg' => ''
+            );
+        
+            // user id 빈값인지 체크
+            if (empty($userGameName)) {
+                $aResult['msg'] = '조회하려는 회원 id가 비어있습니다.';
+                return $aResult;
+            }
+        
+            // MemberModel 객체의 updateMemberLike 호출
+            return $this->oMemberModel->updateMemberLike($userGameName);
+
         }
     }

@@ -238,6 +238,45 @@ class MemberModel {
         return $result;
     }
 
+    /**
+     * member table likes(좋아요) 컬럼 업데이트
+     */
+    public function updateMemberLike($userGameName) {
+        $result = array(
+            'result' => false,
+            'msg' => ''
+        );
+    
+        // 입력값 검증
+        if (empty($userGameName)) {
+            $result['msg'] = '유효하지 않은 사용자입니다.';
+            return $result;
+        }
+    
+        // likes 컬럼 업데이트 쿼리 작성
+        $query = "UPDATE member SET likes = likes + 1 WHERE game_nickname = ?";
+        $stmt = $this->oDataBase->prepare($query);
+    
+        if ($stmt === false) {
+            $result['msg'] = "쿼리 준비 중 오류가 발생했습니다.";
+            return $result;
+        }
+    
+        $stmt->bind_param("s", $userGameName);
+        $stmt->execute();
+    
+        if ($stmt->error) {
+            $result['msg'] = "좋아요 업데이트 중 오류가 발생했습니다.";
+        } else {
+            $result['result'] = true;
+        }
+    
+        $stmt->close();
+    
+        return $result;
+
+    }
+
 
     public function __destruct() {
         // db연결 종료

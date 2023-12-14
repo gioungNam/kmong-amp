@@ -18,7 +18,7 @@ if (empty($_SESSION['user_id'])): ?>
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <!-- 검색 바 -->
-                    <form id="searchForm" action="" method="get">
+                    <form id="searchForm" method="get">
                         <div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="캐릭터 이름 검색" name="search" id="searchInput" value="">
                             <button class="btn btn-primary" type="button" onclick="searchGameName()">검색</button>
@@ -65,6 +65,22 @@ if (empty($_SESSION['user_id'])): ?>
 
 
 <script>
+
+        document.getElementById("searchForm").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // 폼 제출 방지
+                searchGameName();
+            }
+        });
+
+        document.getElementById("guestbookForm").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // 폼 제출 방지
+                addGuestbook();
+            }
+        });
+
+
                 function searchGameName() {
                     var searchTerm = $('#searchInput').val().trim();
 
@@ -93,6 +109,7 @@ if (empty($_SESSION['user_id'])): ?>
                                     userInfoHtml += '<h5 class="card-title">' + userData.game_nickname + '</h5>';
                                     userInfoHtml += '<p class="card-text">레벨: ' + userData.level + '</p>';
                                     userInfoHtml += '<p class="card-text">커뮤니티 닉네임: ' + userData.nickname + '</p>';
+                                    userInfoHtml += '<p class="card-text small">조회수: ' + userData.likes + '</p>';
                                     userInfoHtml += '</div></div>';
 
                                     $('#userInfo').html(userInfoHtml);
@@ -110,10 +127,8 @@ if (empty($_SESSION['user_id'])): ?>
                                             guestbookListHtml += '</div>';
                                         });
                                         $('#guestbookList').html(guestbookListHtml);
-                                    } else {
-                                        $('#guestbookList').html('<p>방명록이 없습니다.</p>');
-                                    }
-
+                                    } 
+                                    $('#guestbookList').html(guestbookListHtml);
                                 } else {
                                     alert(response.msg);
                                 }
@@ -156,7 +171,8 @@ if (empty($_SESSION['user_id'])): ?>
                                     // 입력 폼 초기화
                                     $('#guestbookMessage').val('');
                                 } else {
-                                    alert(response.msg);
+                                    console.log(response.msg);
+                                    alert("방명록을 입력할수 없습니다!");
                                 }
                             },
                             error: function() {

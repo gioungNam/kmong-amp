@@ -40,15 +40,6 @@ if (!$searchResult['result']) {
     exit();
 }
 
-// 검색된 유저의 방명록 목록 가져오기
-// $guestbookList = $memberService->getGuestbookList($searchResult['user_id']);
-
-// JSON 응답 구성
-// $response = array(
-//     'user_info' => '유저 ID: ' . $searchResult['user_id'] . ', 닉네임: ' . $searchResult['nickname'],
-//     'guestbook_list' => $guestbookList
-// );
-
 echo json_encode($searchResult);
 exit();
 
