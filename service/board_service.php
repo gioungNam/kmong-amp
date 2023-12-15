@@ -3,10 +3,18 @@
     session_start();
  }
 
-require_once "../model/board_model.php";
-require_once "../model/member_model.php";
-require_once "member_service.php";
-require_once "../const/common.php";
+if (file_exists("../model/board_model.php")) {
+    require_once "../model/board_model.php";
+    require_once "../model/member_model.php";
+    require_once "member_service.php";
+    require_once "../const/common.php";
+} else {
+    require_once "model/board_model.php";
+    require_once "model/member_model.php";
+    require_once "service/member_service.php";
+    require_once "const/common.php";
+}
+
 
 class BoardService {
 
@@ -171,6 +179,14 @@ class BoardService {
         }
 
         return $aBoardList;
+    }
+
+
+    /**
+     * 추천수 TOP10 화제게시글(자유게시판) 목록 조회
+     */
+    public function getFreeBoardListTop10() {
+        return $this->oBoardModel->getBoardListOrderByLikes();
     }
 
 

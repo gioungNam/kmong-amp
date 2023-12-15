@@ -3,7 +3,12 @@
     session_start();
  }
 
-require_once "../const/common.php";
+ if (file_exists("../const/common.php")) {
+    require_once "../const/common.php";
+ } else {
+    require_once "const/common.php";
+ }
+
 
 class BoardModel {
     /**
@@ -74,6 +79,34 @@ class BoardModel {
                     FROM board
                     LEFT JOIN member ON board.user_id = member.user_id 
                     WHERE board_type = '$sType' ORDER BY id DESC";
+
+        // 쿼리 실행
+        $oResult = $this->oDataBase->query($sQuery);
+
+        // 결과값이 있는 경우
+        if ($oResult->num_rows > 0) {
+            while ($aRow = $oResult->fetch_assoc()) {
+                $aBoardList[] = $aRow;
+            }
+        }
+
+        return $aBoardList;
+    }
+
+
+    /**
+     * 해당 타입에 대한 '추천수 TOP 10' 게시글 리스트 반환
+     */
+    public function getBoardListOrderByLikes($sType = 'free') {
+        $aBoardList = array();
+
+        // 쿼리 작성
+        $sQuery = "SELECT board.*, member.nickname as nickname 
+                    FROM board
+                    LEFT JOIN member ON board.user_id = member.user_id 
+                    WHERE board_type = '$sType' 
+                    ORDER BY board.likes DESC, id DESC 
+                    LIMIT 10";
 
         // 쿼리 실행
         $oResult = $this->oDataBase->query($sQuery);
@@ -400,6 +433,11 @@ class BoardModel {
 
         return $aResult;
     }
+
+
+
+
+
 
     public function __destruct() {
         $this->oDataBase->close();

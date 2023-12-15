@@ -3,8 +3,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once "../model/member_model.php";
-require_once "../const/common.php";
+if (file_exists("../model/member_model.php")) {
+    require_once "../model/member_model.php";
+    require_once "../const/common.php";
+} else {
+    require_once "model/member_model.php";
+    require_once "const/common.php";
+}
+
 
     class MemberService {
             
@@ -302,5 +308,19 @@ require_once "../const/common.php";
             // MemberModel 객체의 updateMemberLike 호출
             return $this->oMemberModel->updateMemberLike($userGameName);
 
+        }
+
+
+        /**
+         * TOP limit 만큼 type 정렬 (기본값은 top 10, 레벨)
+         */
+        public function getMemberOrderBy($sType = 'level', $limit = 10) {
+
+            if ($sType == 'likes') {
+                return $this->oMemberModel->getMemberOrderByLikes($limit);
+            } 
+
+            // 기본은 레벨 조회
+            return $this->oMemberModel->getMemberOrderByLevel($limit);
         }
     }

@@ -1,6 +1,10 @@
 <?php
 
-require_once "../const/common.php";
+if (file_exists("../const/common.php")) {
+    require_once "../const/common.php";
+ } else {
+    require_once "const/common.php";
+ }
 
 class MemberModel {
     
@@ -275,6 +279,90 @@ class MemberModel {
     
         return $result;
 
+    }
+
+    /**
+     * 레벨이 높은 top 10 정렬 조회
+     */
+    public function getMemberOrderByLevel($limit = 10) {
+        $aResult = array(
+            'result' => true,
+            'msg' => '',
+            'data' => array()
+        );
+    
+        $sQuery = "SELECT * FROM member ORDER BY level DESC, user_id ASC LIMIT ?";
+    
+        // 쿼리 실행
+        $stmt = $this->oDataBase->prepare($sQuery);
+        
+        if ($stmt === false) {
+            $aResult['result'] = false;
+            $aResult['msg'] = "쿼리 준비 중 오류가 발생했습니다.";
+            return $aResult;
+        }
+    
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+    
+        $oResult = $stmt->get_result();
+    
+        // 결과값이 있는 경우
+        $aReturn = array();
+        if ($oResult && $oResult->num_rows > 0) {
+            // 순회해서 return 값 세팅
+            while($aRow = $oResult->fetch_assoc()) {
+                $aReturn[] = $aRow;
+            }
+            $aResult['data'] = $aReturn;
+        } 
+    
+        $stmt->close();
+    
+        return $aResult;
+    } 
+
+
+    /**
+     * 좋아요 높은 순서 top 10 정렬 조회
+     */
+
+    public function getMemberOrderByLikes($limit = 10) {
+        $aResult = array(
+            'result' => true,
+            'msg' => '',
+            'data' => array()
+        );
+    
+        $sQuery = "SELECT * FROM member ORDER BY likes DESC, user_id ASC LIMIT ?";
+    
+        // 쿼리 실행
+        $stmt = $this->oDataBase->prepare($sQuery);
+        
+        if ($stmt === false) {
+            $aResult['result'] = false;
+            $aResult['msg'] = "쿼리 준비 중 오류가 발생했습니다.";
+            return $aResult;
+        }
+    
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+    
+        $oResult = $stmt->get_result();
+    
+        // 결과값이 있는 경우
+        $aReturn = array();
+        if ($oResult && $oResult->num_rows > 0) {
+            // 순회해서 return 값 세팅
+            while($aRow = $oResult->fetch_assoc()) {
+                $aReturn[] = $aRow;
+            }
+            $aResult['data'] = $aReturn;
+        }
+    
+        $stmt->close();
+    
+        return $aResult;
     }
 
 

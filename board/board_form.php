@@ -107,7 +107,7 @@ if ($updateType === 'update' && !empty($boardId)) {
             } else {
                 // 성공시, 수정 모드인 경우와 아닌 경우에 따라 리다이렉트
                 if ("<?php echo $updateType; ?>" === "update") {
-                    window.location.href = "post.php?id=" + res.data.board_id;
+                    window.location.href = "post.php?id=" + res.data.board_id + "&type=<?php echo $boardType ?>";
                 } else {
                     window.location.href = "board.php?type=" + res.data.board_type;
                 }
